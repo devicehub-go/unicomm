@@ -16,8 +16,8 @@ import (
 	"go.bug.st/serial"
 )
 
-type Parity = serial.Parity
 type Port = serial.Port
+type Parity = serial.Parity
 type StopBits = serial.StopBits
 
 type SerialOptions struct {
@@ -39,6 +39,20 @@ type UnicommSerial struct {
 
 	mutex sync.Mutex  // Protect port instance
 }
+
+const (
+	NoParity Parity = iota
+	OddParity
+	EvenParity
+	MarkParity
+	SpaceParity
+)
+
+const (
+	OneStopBit StopBits = iota
+	OnePointFiveStopBits
+	TwoStopBits
+)
 
 /*
 Creates a new instance of Unicomm Serial communication
