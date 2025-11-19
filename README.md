@@ -35,7 +35,7 @@ import (
 
 func main() {
     // Create a new Unicomm instance for Serial communication
-    comm := unicomm.New(unicomm.UnicommOptions{
+    comm := unicomm.New(unicomm.Options{
         Protocol: unicomm.Serial,
         Serial: unicommserial.SerialOptions{
             PortName:       "/dev/ttyUSB0",
@@ -76,7 +76,7 @@ func main() {
 ### Serial Communication
 
 ```go
-comm := unicomm.New(unicomm.UnicommOptions{
+comm := unicomm.New(unicomm.Options{
     Protocol: unicomm.Serial,
     Serial: unicommserial.SerialOptions{
         PortName:        "/dev/ttyUSB0",  // Windows: "COM1"
@@ -96,7 +96,7 @@ comm := unicomm.New(unicomm.UnicommOptions{
 ### TCP Communication
 
 ```go
-comm := unicomm.New(unicomm.UnicommOptions{
+comm := unicomm.New(unicomm.Options{
     Protocol: unicomm.TCP,
     TCP: unicommtcp.TCPOptions{
         Host:         "192.168.1.100",
@@ -111,7 +111,7 @@ comm := unicomm.New(unicomm.UnicommOptions{
 ### IPv6 Support
 
 ```go
-comm := unicomm.New(unicomm.UnicommOptions{
+comm := unicomm.New(unicomm.Options{
     Protocol: unicomm.TCP,
     TCP: unicommtcp.TCPOptions{
         Host:         "2001:db8::1",  // IPv6 address

@@ -10,7 +10,7 @@ import (
 )
 
 func TestSerial(t *testing.T) {
-	options := unicomm.UnicommOptions{
+	options := unicomm.Options{
 		Protocol: unicomm.Serial,
 		Serial: unicommserial.SerialOptions{
 			PortName:     "COM6",

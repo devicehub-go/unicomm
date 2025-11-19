@@ -224,6 +224,8 @@ func (us *UnicommSerial) ReadUntil(endDelimiter string) ([]byte, error) {
 Writes an array of bytes to the serial port
 */
 func (us *UnicommSerial) Write(message []byte) error {
+	var errorChan = make(chan error)
+
 	msgStr := string(message)
 	endDelimiter := us.Options.EndDelimiter
 
@@ -234,17 +236,29 @@ func (us *UnicommSerial) Write(message []byte) error {
 		message = append(message, []byte(endDelimiter)...)
 	}
 
-	us.mutex.Lock()
-	us.Connection.ResetInputBuffer()
-	us.Connection.ResetOutputBuffer()
-	nWrited, err := us.Connection.Write(message)
-	us.mutex.Unlock()
+	timer := time.NewTimer(us.Options.WriteTimeout)
+	defer timer.Stop()
 
-	if err != nil {
-		return err
+	us.mutex.Lock()
+	defer us.mutex.Unlock()
+
+	go func() {
+		us.Connection.ResetInputBuffer()
+		us.Connection.ResetOutputBuffer()
+		nWrited, err := us.Connection.Write(message)
+		if nWrited != len(message) {
+			errorChan <-fmt.Errorf("writed %d bytes, expected %d", nWrited, len(message))
+			return
+		}
+		errorChan <-err
+	}()
+
+	for{
+		select{
+		case err := <-errorChan:
+			return err
+		case <-timer.C:
+			return fmt.Errorf("write timeout")
+		}
 	}
-	if nWrited != len(message) {
-		return fmt.Errorf("writed %d bytes, expected %d", nWrited, len(message))
-	}
-	return nil
 }

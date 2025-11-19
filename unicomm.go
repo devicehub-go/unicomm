@@ -13,7 +13,7 @@ import (
 
 type Protocol uint8
 
-type UnicommOptions struct {
+type Options struct {
 	Protocol Protocol
 	Serial unicommserial.SerialOptions
 	TCP unicommtcp.TCPOptions
@@ -38,7 +38,7 @@ const (
 Creates a new instance of unified communication based on
 the target protocol
 */
-func New(options UnicommOptions) Unicomm {
+func New(options Options) Unicomm {
 	switch(options.Protocol) {
 	case Serial:
 		return unicommserial.NewSerial(options.Serial)
