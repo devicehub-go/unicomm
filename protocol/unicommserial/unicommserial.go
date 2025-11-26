@@ -21,23 +21,23 @@ type Parity = serial.Parity
 type StopBits = serial.StopBits
 
 type SerialOptions struct {
-	PortName string
-	BaudRate int
-	Parity Parity
-	DataBits int
-	StopBits StopBits
-	ReadTimeout time.Duration
-	WriteTimeout time.Duration
+	PortName       string
+	BaudRate       int
+	Parity         Parity
+	DataBits       int
+	StopBits       StopBits
+	ReadTimeout    time.Duration
+	WriteTimeout   time.Duration
 	StartDelimiter string
-	EndDelimiter string
-	RetryConnect bool
+	EndDelimiter   string
+	RetryConnect   bool
 }
 
 type UnicommSerial struct {
-	Options SerialOptions
+	Options    SerialOptions
 	Connection Port
 
-	mutex sync.Mutex  // Protect port instance
+	mutex sync.Mutex // Protect port instance
 }
 
 const (
@@ -82,9 +82,11 @@ func (us *UnicommSerial) isPortAvailable(portName string) error {
 	}
 
 	port, err := serial.Open(portName, &serial.Mode{})
+	if err != nil {
+		return err
+	}
 	port.Close()
-
-	return err
+	return nil
 }
 
 /*
@@ -111,7 +113,7 @@ func (us *UnicommSerial) Connect() error {
 	portName := us.Options.PortName
 	serialMode := &serial.Mode{
 		BaudRate: us.Options.BaudRate,
-		Parity: us.Options.Parity,
+		Parity:   us.Options.Parity,
 		DataBits: us.Options.DataBits,
 		StopBits: us.Options.StopBits,
 	}
@@ -144,14 +146,14 @@ func (us *UnicommSerial) Disconnect() error {
 	if !us.IsConnected() {
 		return fmt.Errorf("there is no port connected")
 	}
-	
+
 	us.mutex.Lock()
 	defer us.mutex.Unlock()
 
 	if err := us.Connection.Close(); err != nil {
 		return err
 	}
-	
+
 	us.Connection = nil
 	return nil
 }
@@ -202,21 +204,21 @@ func (us *UnicommSerial) ReadUntil(endDelimiter string) ([]byte, error) {
 			}
 			if nReaded == 1 {
 				buffer = append(buffer, singleByte...)
-			} 
+			}
 			if nReaded == 0 || strings.Contains(string(buffer), endDelimiter) {
 				resultChan <- buffer
 				return
 			}
 		}
 	}()
-	
+
 	select {
-		case err := <-errorChan:
-			return nil, err
-		case result := <-resultChan:
-			return result, nil
-		case <- time.After(us.Options.ReadTimeout):
-			return buffer, fmt.Errorf("read until timeout")
+	case err := <-errorChan:
+		return nil, err
+	case result := <-resultChan:
+		return result, nil
+	case <-time.After(us.Options.ReadTimeout):
+		return buffer, fmt.Errorf("read until timeout")
 	}
 }
 
@@ -247,14 +249,14 @@ func (us *UnicommSerial) Write(message []byte) error {
 		us.Connection.ResetOutputBuffer()
 		nWrited, err := us.Connection.Write(message)
 		if nWrited != len(message) {
-			errorChan <-fmt.Errorf("writed %d bytes, expected %d", nWrited, len(message))
+			errorChan <- fmt.Errorf("writed %d bytes, expected %d", nWrited, len(message))
 			return
 		}
-		errorChan <-err
+		errorChan <- err
 	}()
 
-	for{
-		select{
+	for {
+		select {
 		case err := <-errorChan:
 			return err
 		case <-timer.C:
