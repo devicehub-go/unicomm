@@ -14,9 +14,9 @@ import (
 type Protocol uint8
 
 type Options struct {
-	Protocol Protocol
-	Serial unicommserial.SerialOptions
-	TCP unicommtcp.TCPOptions
+	Protocol  Protocol
+	Serial    unicommserial.SerialOptions
+	TCP       unicommtcp.TCPOptions
 	Delimiter string
 }
 
@@ -39,7 +39,7 @@ Creates a new instance of unified communication based on
 the target protocol
 */
 func New(options Options) Unicomm {
-	switch(options.Protocol) {
+	switch options.Protocol {
 	case Serial:
 		return unicommserial.NewSerial(options.Serial)
 	case TCP:

@@ -15,15 +15,15 @@ import (
 )
 
 type TCPOptions struct {
-	Host string
-	Port uint
-	ReadTimeout time.Duration
+	Host         string
+	Port         uint
+	ReadTimeout  time.Duration
 	WriteTimeout time.Duration
 	EndDelimiter string
 }
 
 type UnicommTCP struct {
-	Options TCPOptions
+	Options    TCPOptions
 	Connection net.Conn
 
 	mutex sync.Mutex
@@ -149,7 +149,7 @@ func (ut *UnicommTCP) ReadUntil(endDelimiter string) ([]byte, error) {
 
 	ut.mutex.Lock()
 	defer ut.mutex.Unlock()
-	
+
 	timeout := time.Now().Add(ut.Options.ReadTimeout)
 	ut.Connection.SetReadDeadline(timeout)
 
@@ -162,21 +162,21 @@ func (ut *UnicommTCP) ReadUntil(endDelimiter string) ([]byte, error) {
 			}
 			if nReaded == 1 {
 				buffer = append(buffer, singleByte...)
-			} 
+			}
 			if nReaded == 0 || strings.Contains(string(buffer), endDelimiter) {
 				resultChan <- buffer
 				return
 			}
 		}
 	}()
-	
+
 	select {
-		case err := <-errorChan:
-			return nil, err
-		case result := <-resultChan:
-			return result, nil
-		case <- time.After(ut.Options.ReadTimeout):
-			return buffer, fmt.Errorf("read until timeout")
+	case err := <-errorChan:
+		return nil, err
+	case result := <-resultChan:
+		return result, nil
+	case <-time.After(ut.Options.ReadTimeout):
+		return buffer, fmt.Errorf("read until timeout")
 	}
 }
 
